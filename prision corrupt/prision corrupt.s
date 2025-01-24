@@ -9,6 +9,15 @@
 .include "Sprites/presoPadrao.s"
 .include "Sprites/presoAtaque.s"
 
+presos:
+.space 100
+
+fase:
+.word 1
+
+lista_selecionados:
+.space 20
+
 
 
 CHAR_POS:	.half 56,192	# x, y
@@ -48,7 +57,65 @@ SETUP3:		la a0, score00			# carrega o endereco do sprite 'map' em a0
 		li a3,0				# frame = 0
 		call PRINT			# imprime o sprite
 		li a3,1				# frame = 1
-		call PRINT			# imprime o sprite
+		call PRINT
+		
+		
+		la t0, lista_selecionados
+		addi t1, t0, 20
+		
+		FILL_LOOP:
+		bgeu t0, t1, OUT_FILL_LOOP
+		li t2, -1
+		sb t2, 0(t0)
+		addi t0, t0, 1
+		j FILL_LOOP
+		OUT_FILL_LOOP:
+		
+		
+		li a7, 30
+		ecall
+		mv a1, a0
+		li a0, 0
+		li a7, 40
+		ecall
+		
+		la t0, lista_selecionados
+		la t2, fase
+		la t4, presos
+		addi, t1, t0, 3
+		add, t1, t1,t2
+		
+		SET_PRESO_POS_LOOP:
+		bgeu t0, t1, OUT_SET_PRESO_POS_LOOP
+		
+		li a0, 0
+		li a1, 19
+		li a7, 42
+		ecall
+		
+		mv s1, a0
+		
+		la t3, lista_selecionados
+		SET_PRESO_POS_LOOP_LOOP:
+		bgeu t3, t1, OUT_SET_PRESO_POS_LOOP_LOOP
+		
+		lw t4, 0(t3)
+		
+		beq t4,s1, SET_PRESO_POS_LOOP
+		addi t3, t3, 1
+		j SET_PRESO_POS_LOOP_LOOP
+		
+		OUT_SET_PRESO_POS_LOOP_LOOP:
+		
+		sb s1, 0(t0)
+		sb s1, 0(t4)
+		addi t0, t0, 1
+		addi t4, t4, 2
+		
+		OUT_SET_PRESO_POS_LOOP:
+		
+		
+		
 		
 
 GAME_LOOP:	call KEY2			# chama o procedimento de entrada do teclado
