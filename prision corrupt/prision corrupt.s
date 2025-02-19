@@ -500,6 +500,7 @@ SKIP_UPDATE:
     addi t1, t1, -1
     sb t1, 0(t0)
     
+    j PLAY_SOUND
    
     NO_BULLET_DMG:
     
