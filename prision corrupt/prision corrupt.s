@@ -502,6 +502,7 @@ SKIP_UPDATE:
     addi t1, t1, -1
     sb t1, 0(t0)
     
+    j PLAY_SOUND
    
     NO_BULLET_DMG:
     
@@ -535,7 +536,7 @@ DEACTIVATE_BULLET:
 BULLET_INACTIVE:
     # Randomly spawn a new bullet
     li a0, 1
-    li a1, 8  # 1 in 100 chance to spawn a bullet
+    li a1, 2  # 1 in 8 chance to spawn a bullet
     li a7, 42
     ecall
     bnez a0, BULLET_ACTIVE
@@ -570,6 +571,8 @@ BULLET_ACTIVE:
 		
 		
 		mv a3, s0  
+				# carrega o frame atual (que esta na tela em a3)
+		xori a3,a3,1
 		call PRINT			# carrega o frame atual (que esta na tela em a3)
 				                # inverte a3 (0 vira 1, 1 vira 0)
 					#
@@ -620,7 +623,8 @@ BULLET_ACTIVE:
 		lh a1,0(t0)			# carrega a posicao x antiga do personagem em a1
 		lh a2,2(t0)			# carrega a posicao y antiga do personagem em a2
 		
-		mv a3,s0			# carrega o frame atual (que esta na tela em a3)
+		mv a3,s0	
+				# carrega o frame atual (que esta na tela em a3)
 					# inverte a3 (0 vira 1, 1 vira 0)
 		call PRINT			# imprime
 		
