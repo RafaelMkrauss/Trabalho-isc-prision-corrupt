@@ -336,6 +336,55 @@ GAME_LOOP:
     call KEY2                   # Chama o procedimento de entrada do teclado
     xori s0, s0, 1              # XOR para alternar s0 entre 0 e 1
     
+    
+    addi sp, sp, -20
+    sw a0, 0(sp)
+    sw s0, 4(sp)
+    sw a3, 8(sp)
+    sw t0, 12(sp)
+    sw a1, 16(sp)
+    sw a2, 20(sp)
+    
+   
+   mv a3, s0                      # Valor do frame em a3
+    
+    la t0,CHAR_POS			# carrega em t0 o endereco de CHAR_POS
+		
+		lh a1,0(t0)			# carrega a posicao x do personagem em a1
+		lh a2,2(t0)
+     
+     
+    la a0, grade
+    call PRINT
+    
+    la t0,bullet_pos			# carrega em t0 o endereco de CHAR_POS
+		
+		lh a1,0(t0)			# carrega a posicao x do personagem em a1
+		lh a2,2(t0)
+     
+     
+    la a0, grade
+    call PRINT
+    
+    la t0,old_bullet_pos			# carrega em t0 o endereco de CHAR_POS
+		
+		lh a1,0(t0)			# carrega a posicao x do personagem em a1
+		lh a2,2(t0)
+     
+     
+    la a0, grade
+    call PRINT
+    
+  
+    lw a0, 0(sp)
+    lw s0, 4(sp)
+    lw a3, 8(sp)
+    lw t0, 12(sp)
+    lw a1, 16(sp)
+    lw a2, 20(sp)
+    addi sp, sp, 20
+    
+    
     # Carregar endereços base
     la a4, presos                  # Endereço base da lista 'presos'
     la a5, fase                    # Endereço da variável 'fase'
@@ -563,22 +612,7 @@ BULLET_INACTIVE:
 
 BULLET_ACTIVE:
 
-		la t0,old_bullet_pos		# carrega em t0 o endereco de old_bullet_pos
 		
-		la a0,grade			# carrega o endereco do sprite 'tile' em a0
-		lh a1,0(t0)			# carrega a posicao x antiga do personagem em a1
-		lh a2,2(t0)			# carrega a posicao y antiga do personagem em a2
-		
-		
-		mv a3, s0  
-				# carrega o frame atual (que esta na tela em a3)
-		xori a3,a3,1
-		call PRINT			# carrega o frame atual (que esta na tela em a3)
-				                # inverte a3 (0 vira 1, 1 vira 0)
-					#
-               
-
- 
    
 					
 		
@@ -607,7 +641,8 @@ BULLET_ACTIVE:
 		xori s0,s0,1
 		mv a3, s0  
 		call PRINT
-		
+		xori s0,s0,1
+		mv a3, s0
 		
 		
 		
