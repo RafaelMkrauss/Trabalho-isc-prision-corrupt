@@ -18,7 +18,9 @@
 .include "Sprites/gameOver.s"
 .include "Sprites/PolicialDano.s"
 .include "Sprites/balaNormal.s"
-
+var: .word 0
+Music_config: 	.word 109,0,1,60  #notas total, nota atual, instrumento, volume	
+Notas: 		.word 60,104,60,104,61,104,60,104,64,104,60,104,61,104,60,104,67,834,60,104,65,104,64,104,62,104,64,104,65,104,71,104,69,104,67,834,60,104,65,104,64,104,62,104,64,104,65,104,71,104,69,104,67,417,65,417,67,625,65,104,64,104,62,417,65,417,67,208,65,104,67,521,65,208,64,104,65,208,59,104,60,104,62,104,64,208,62,104,64,312,60,208,62,208,60,104,61,312,62,208,64,312,62,312,60,1042,60,834,61,834,60,104,60,104,61,104,60,104,64,104,60,104,61,104,60,104,67,834,60,104,65,104,64,104,62,104,64,104,65,104,71,104,69,104,67,834,60,104,65,104,64,104,62,104,64,104,65,104,71,104,69,104,67,417,65,417,67,312,65,312,64,208,62,417,65,417,67,208,65,104,67,1042,62,104,64,104,65,104,67,208,65,104,67,312,65,208,64,417,62,417,64,312,62,312,60,417,60,208,64,208,69,834,67,104,66,104,67,834
 presos:
 .space 20
 
@@ -500,7 +502,6 @@ SKIP_UPDATE:
     addi t1, t1, -1
     sb t1, 0(t0)
     
-    j PLAY_SOUND
    
     NO_BULLET_DMG:
     
@@ -649,7 +650,7 @@ BULLET_ACTIVE:
 		mv a3,s0			# carrega o frame atual (que esta na tela em a3)
 		xori a3,a3,1			# inverte a3 (0 vira 1, 1 vira 0)
 		call PRINT			# imprime
-
+		call TocarMusica
 		j GAME_LOOP			# continua o loop
 		
 KEY2LOCK:	li t1,0xFF200000		# carrega o endereco de controle do KDMMIO
@@ -1146,3 +1147,44 @@ PLAY_SOUND:
     li a7, 31          # Syscall para tocar som
     ecall
     ret
+#parte internacional
+TocarMusica:
+					#s11 eh o contador de tempo
+li a7,30					#coloca o horario atual em a0
+ecall						#função não recebe entrada
+ If_TM:						#apenas toca a proxima nota de Notas
+ 	la t0,var
+ 	lw t0,0(t0)
+ 	bltu a0,t0, Fim_If_TM
+	la t2,Music_config
+ 	lw t0, 0(t2)
+ 	lw t1, 4(t2)
+ 	lw a2, 8(t2)
+ 	lw a3, 12(t2)
+	If_TM1:
+		bne t0,t1, Fim_If_TM1	# contador chegou no final? entÃƒÂ£o  vÃƒÂ¡ para SET_SONG para zerar o contador e as notas (loop infinito)
+		sw zero, 4(t2)
+		li t1, 0
+	Fim_If_TM1:
+	la t4, Notas
+	li t3,8
+	mul t1, t1,t3
+	add t4,t4,t1
+	lw a0,0(t4)		# le o valor da nota
+	lw a1,4(t4)		# le a duracao da nota
+	li a7,31		# define a chamada de syscall
+	ecall			# toca a nota
+	
+	li a7,30		# coloca o horario atual em a0
+	ecall
+	
+	lw t4, 4(t4)
+	add a0,a0,t4
+	la t0,var
+	sw a0,0(t0)
+	lw t6, 4(t2)
+	addi t6,t6,1
+	sw t6,4(t2)		# incrementa o contador de notas
+Fim_If_TM:
+
+ret
