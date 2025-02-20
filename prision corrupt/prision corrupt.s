@@ -222,12 +222,16 @@ SCREEN_INSTRUCTIONS:
 		call PRINT			# imprime o sprite
 		li a3,1				# frame = 1
 		call PRINT			# imprime o sprite
+		
+		
 						        					        	      	
 JUMP_CHEATS: 	call KEY2LOCK                  
-        	li t0, ' '                 
+        	li t0, 'x'     
+        	li t3, ' '             
         	li t1, 0xFF200000          
         	lw t2, 4(t1)               
         	beq t2, t0,SCREEN_CHEATS
+        	beq t2, t3,MENU
         	j JUMP_CHEATS
         	
 SCREEN_CHEATS:  la a0,screenCheats		# carrega o endereco do sprite 'map' em a0
@@ -1386,8 +1390,8 @@ TELA_FINAL:
 
 WAIT_SPACE_FINAL:
     call KEY2LOCK
-    li t0, ' '
+    li t0, 'x'
     li t1, 0xFF200000
     lw t2, 4(t1)
     bne t2, t0, WAIT_SPACE_FINAL
-    j INICIO  # Reiniciar o jogo
+    j menu  # Reiniciar o jogo
