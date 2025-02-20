@@ -18,9 +18,26 @@
 .include "Sprites/gameOver.s"
 .include "Sprites/PolicialDano.s"
 .include "Sprites/balaNormal.s"
+.include "sprites/fase1.s"
+.include "sprites/fase2.s"
+.include "sprites/fase3.s"
+.include "sprites/fase4.s"
+.include "sprites/score0.s"
+.include "sprites/score1.s"
+.include "sprites/score2.s"
+.include "sprites/score3.s"
+.include "sprites/score4.s"
+.include "sprites/score5.s"
+.include "sprites/score6.s"
+.include "sprites/score7.s"
+.include "sprites/score8.s"
+.include "sprites/score9.s"
+.include "sprites/telaFinal.s"
+
 var: .word 0
 Music_config: 	.word 109,0,1,60  #notas total, nota atual, instrumento, volume	
 Notas: 		.word 60,104,60,104,61,104,60,104,64,104,60,104,61,104,60,104,67,834,60,104,65,104,64,104,62,104,64,104,65,104,71,104,69,104,67,834,60,104,65,104,64,104,62,104,64,104,65,104,71,104,69,104,67,417,65,417,67,625,65,104,64,104,62,417,65,417,67,208,65,104,67,521,65,208,64,104,65,208,59,104,60,104,62,104,64,208,62,104,64,312,60,208,62,208,60,104,61,312,62,208,64,312,62,312,60,1042,60,834,61,834,60,104,60,104,61,104,60,104,64,104,60,104,61,104,60,104,67,834,60,104,65,104,64,104,62,104,64,104,65,104,71,104,69,104,67,834,60,104,65,104,64,104,62,104,64,104,65,104,71,104,69,104,67,417,65,417,67,312,65,312,64,208,62,417,65,417,67,208,65,104,67,1042,62,104,64,104,65,104,67,208,65,104,67,312,65,208,64,417,62,417,64,312,62,312,60,417,60,208,64,208,69,834,67,104,66,104,67,834
+
 presos:
 .space 20
 
@@ -28,10 +45,10 @@ policial:
 .byte 15
 
 fase:
-.byte 0
+.byte 1
 
 vida:
-.byte 4   #vida do personagem(arrumar melhor depois)
+.byte 4  #vida do personagem
 
 cont_mov:
 .byte 0
@@ -69,6 +86,7 @@ TICKS_PER_SEC:  .word 10000  # Assuming 1 tick = 1 ms (adjust as needed)
 
 .text
 INICIO:
+	
 RESET_VARIAVEIS:
     # Reinicializa a vida do personagem
     la t0, vida
@@ -80,15 +98,15 @@ RESET_VARIAVEIS:
     li t1, 0
     sb t1, 0(t0)
 
-    # Reinicializa a posição do policial
+    # Reinicializa a posiï¿½ï¿½o do policial
     la t0, policial
     li t1, 15
     sb t1, 0(t0)
 
     # Reinicializa a fase
-    la t0, fase
-    li t1, 0
-    sb t1, 0(t0)
+    #la t0, fase
+    #li t1, 0
+    #sb t1, 0(t0)
 
     # Reinicializa a lista de selecionados
     la t0, lista_selecionados
@@ -103,28 +121,30 @@ FILL_LISTA_LOOP2:
     addi t0, t0, 1
     addi t1, t1, -1
     j FILL_LISTA_LOOP2
+    
 OUT_FILL_LISTA_LOOP2:
-
-    # Reinicializa os espaços de dano
+    # Reinicializa os espaï¿½os de dano
     la t0, espacos_dano
     li t1, 20
     li t2, 0
+    
 FILL_DANO_LOOP3:
     beqz t1, OUT_FILL_DANO_LOOP3
     sb t2, 0(t0)
     addi t0, t0, 1
     addi t1, t1, -1
     j FILL_DANO_LOOP3
+    
 OUT_FILL_DANO_LOOP3:
 
-    # Reinicializa a posição do personagem
+    # Reinicializa a posiï¿½ï¿½o do personagem
     la t0, CHAR_POS
     li t1, 56
     sh t1, 0(t0)
     li t1, 192
     sh t1, 2(t0)
 
-    # Reinicializa a posição antiga do personagem
+    # Reinicializa a posiï¿½ï¿½o antiga do personagem
     la t0, OLD_CHAR_POS
     li t1, 56
     sh t1, 0(t0)
@@ -147,6 +167,12 @@ OUT_FILL_DANO_LOOP3:
 
     la t0, bullet_active
     sb t1, 0(t0)  # bullet_active = 0
+    
+    la t0, fase
+    lb t0, 0(t0)
+    li t1,1
+    
+    bgt t0,t1,SETUP2
     
 SETUP:		la a0,map			# carrega o endereco do sprite 'map' em a0
 		li a1,0				# x = 0
@@ -221,27 +247,17 @@ RETURN_MENU:	call KEY2LOCK
         	j MENU		      	      	
         	     	
 								
-SETUP2:		la a0,posTitle			# carrega o endereco do sprite 'map' em a0
-		li a1,0				# x = 0
-		li a2,0				# y = 0
-		li a3,0				# frame = 0
-		call PRINT			# imprime o sprite
-		li a3,1				# frame = 1
-		call PRINT			# imprime o sprite
-		# esse setup serve para desenhar o mapa depois da 
-SETUP3:		la a0, score00			# carrega o endereco do sprite 'map' em a0
-		li a1,0				# x = 0
-		li a2,0				# y = 0
-		li a3,0				# frame = 0
-		call PRINT			# imprime o sprite
-		li a3,1				# frame = 1
-		call PRINT
+SETUP2:	
+    call EXIBIR_FASE	
 		
-#acessa o array e carrega o numero 20 nele		
-		la t0, lista_selecionados
-		addi t1, t0, 20
+SETUP3:
+		#acessa o array e carrega o numero 20 nele
+        	la t0, lista_selecionados
+        	addi t1, t0, 20
+        
 		
 FILL_LOOP:
+
 		bgeu t0, t1, OUT_FILL_LOOP
 		li t2, 0
 		sb t2, 0(t0)
@@ -266,7 +282,7 @@ FILL_DANO_LOOP:
 		
 OUT_FILL_DANO_LOOP:
 		
-   # Inicializações
+   # Inicializaï¿½ï¿½es
 li a7, 30
 ecall
 mv a1, a0
@@ -290,15 +306,15 @@ SET_PRESO_POS_LOOP:
     # Verifica o fim do loop externo
     bgeu t0, t1, OUT_SET_PRESO_POS_LOOP
 
-    # Gera um número aleatório entre 0 e 19
+    # Gera um nï¿½mero aleatï¿½rio entre 0 e 19
     li a0, 1
     li a1, 19
     li a7, 42
     ecall
-    mv s1, a0  # Salva o número aleatório em s1
+    mv s1, a0  # Salva o nï¿½mero aleatï¿½rio em s1
 
     la t3, lista_selecionados  # Reinicia t3 para percorrer lista_selecionados
-
+    
 SET_PRESO_POS_LOOP_LOOP:
     # Verifica o fim do loop interno
     bgeu t3, t1, OUT_SET_PRESO_POS_LOOP_LOOP
@@ -306,7 +322,7 @@ SET_PRESO_POS_LOOP_LOOP:
     # Carrega um valor da lista de selecionados
     lb t5, 0(t3)
     
-    # Se valor já existe, reinicia o loop externo
+    # Se valor jï¿½ existe, reinicia o loop externo
     beq t5, s1, SET_PRESO_POS_LOOP
     
     # Incrementa t3
@@ -314,7 +330,7 @@ SET_PRESO_POS_LOOP_LOOP:
     j SET_PRESO_POS_LOOP_LOOP
 
 OUT_SET_PRESO_POS_LOOP_LOOP:
-    # Armazena o número selecionado em presos
+    # Armazena o nï¿½mero selecionado em presos
     sb s1, 0(t0)
     # Incrementa o ponteiro de presos
     addi t0, t0, 1
@@ -322,14 +338,14 @@ OUT_SET_PRESO_POS_LOOP_LOOP:
     # Marca como "vivo"
     li t5, 1
     sb t5, 0(t4)
-    # Avança o ponteiro
+    # Avanï¿½a o ponteiro
     addi t4, t4, 1
 
-    # Volta ao início do loop externo
+    # Volta ao inï¿½cio do loop externo
     j SET_PRESO_POS_LOOP
 
 OUT_SET_PRESO_POS_LOOP:
-    # Finalização do código
+    # Finalizaï¿½ï¿½o do cï¿½digo
 		
 
 GAME_LOOP:  
@@ -337,7 +353,7 @@ GAME_LOOP:
     xori s0, s0, 1              # XOR para alternar s0 entre 0 e 1
     
     
-    addi sp, sp, -20
+       addi sp, sp, -20
     sw a0, 0(sp)
     sw s0, 4(sp)
     sw a3, 8(sp)
@@ -385,11 +401,11 @@ GAME_LOOP:
     addi sp, sp, 20
     
     
-    # Carregar endereços base
-    la a4, presos                  # Endereço base da lista 'presos'
-    la a5, fase                    # Endereço da variável 'fase'
-    la s11, lista_selecionados     # Endereço base de 'lista_selecionados'
-    la s5, cont_mov                # Endereço base de 'cont_mov'
+    # Carregar endereï¿½os base
+    la a4, presos                  # Endereï¿½o base da lista 'presos'
+    la a5, fase                    # Endereï¿½o da variï¿½vel 'fase'
+    la s11, lista_selecionados     # Endereï¿½o base de 'lista_selecionados'
+    la s5, cont_mov                # Endereï¿½o base de 'cont_mov'
     
     # Calcular limite para o loop
     lb a5, 0(a5)                   # Carrega o valor em 'fase'
@@ -431,7 +447,7 @@ SPAWN_PRESOS_LOOP:
     la a0, presoMorte
     li a7, -1
     sb a7, 0(a4)
-    call PRINT                     # Chamar função PRINT
+    call PRINT                     # Chamar funï¿½ï¿½o PRINT
     
     la a0, policialAtaque
     call PRINT
@@ -459,7 +475,7 @@ NAO_ATACANDO:
     la a0,grade
     call PRINT	
     la a0, presoPadrao 
-    call PRINT                     # Chamar função PRINT
+    call PRINT                     # Chamar funï¿½ï¿½o PRINT
      
 MORTO:
 ATACANDO:
@@ -467,7 +483,7 @@ ATACANDO:
 SPAWN_PRESOS_NOT1:
     addi a4, a4, 1                 # Incrementa o ponteiro de 'presos'
     addi s11, s11, 1               # Incrementa o ponteiro de 'lista_selecionados'
-    j SPAWN_PRESOS_LOOP            # Volta para o início do loop
+    j SPAWN_PRESOS_LOOP            # Volta para o inï¿½cio do loop
 
 OUT_SPAWN_PRESOS_LOOP:
     # Zerando os registradores para evitar conflitos
@@ -481,10 +497,69 @@ OUT_SPAWN_PRESOS_LOOP:
     li s11, 0
     li s6, 0
     li s7, 0
+    
+    # Verificar se todos os presos estï¿½o mortos
+    la t0, presos
+    la t1, fase
+    lb t1, 0(t1)          # Carregar fase atual
+    addi t1, t1, 3        # Total de presos = fase + 3
+    li t2, 0              # Contador
+    li t3, 0              # Contador de mortos
+
+CHECK_ALL_DEAD:
+    beq t2, t1, CHECK_DEAD_DONE
+    lb t4, 0(t0)          # Estado do preso
+    blez t4, INCREMENT_DEAD
+    j NOT_ALL_DEAD        # Preso vivo
+    
+INCREMENT_DEAD:
+    addi t3, t3, 1
+    addi t0, t0, 1
+    addi t2, t2, 1
+    j CHECK_ALL_DEAD
+
+CHECK_DEAD_DONE:
+    bne t3, t1, BULLET_HANDLING  # Continuar se nï¿½o todos mortos
    
+    # Todos mortos - mostrar tela de vitï¿½ria
+    la a0, floorCompleted
+    li a1, 0
+    li a2, 0
+    li a3, 0
+    call PRINT
+    li a3, 1
+    call PRINT
     
 
-    # Fim do loop
+    # Esperar espaï¿½o
+WAIT_SPACE:
+    call KEY2LOCK
+    li t0, ' '
+    li t1, 0xFF200000
+    lw t2, 4(t1)
+    bne t2, t0, WAIT_SPACE
+    
+
+    # Incrementar fase (mÃ¡ximo fase 4)
+    la t0, fase
+    lb t1, 0(t0)
+    addi t1, t1, 1
+    li t2, 4
+    j UPDATE_FASE
+    
+RESET_FASE:
+    li t1, 5  # ForÃ§ar fase 5 para acionar a tela final
+    j UPDATE_FASE
+UPDATE_FASE:
+    sb t1, 0(t0)
+    bgt t1, t2, TELA_FINAL  # Se fase >4, mostrar tela final
+    j SETUP2            # Reiniciar jogo com nova fase
+
+NOT_ALL_DEAD:
+    # Continuaï¿½ï¿½o normal do jogo
+    j BULLET_HANDLING
+
+BULLET_HANDLING:
 
    # Increment the timer
     la   t4, bullet_timer  # Load address of bullet_timer
@@ -496,7 +571,7 @@ OUT_SPAWN_PRESOS_LOOP:
     lw   t6, 0(t6)         # Load tick threshold (1000)
     blt  t5, t6, SKIP_UPDATE  # If timer < 1000, skip bullet update
 
-    # Otherwise, one second has passed – reset the timer:
+    # Otherwise, one second has passed ï¿½ reset the timer:
     li   t5, 0
     sw   t5, 0(t4)
     
@@ -550,8 +625,8 @@ SKIP_UPDATE:
     lb t1, 0(t0)
     addi t1, t1, -1
     sb t1, 0(t0)
-    
-    j PLAY_SOUND
+   
+   j PLAY_SOUND
    
     NO_BULLET_DMG:
     
@@ -585,7 +660,7 @@ DEACTIVATE_BULLET:
 BULLET_INACTIVE:
     # Randomly spawn a new bullet
     li a0, 1
-    li a1, 2  # 1 in 8 chance to spawn a bullet
+    li a1, 3  # 1 in 3 chance to spawn a bullet
     li a7, 42
     ecall
     bnez a0, BULLET_ACTIVE
@@ -613,6 +688,9 @@ BULLET_INACTIVE:
 BULLET_ACTIVE:
 
 		
+               
+
+ 
    
 					
 		
@@ -641,8 +719,10 @@ BULLET_ACTIVE:
 		xori s0,s0,1
 		mv a3, s0  
 		call PRINT
+		
 		xori s0,s0,1
 		mv a3, s0
+		
 		
 		
 		
@@ -658,8 +738,7 @@ BULLET_ACTIVE:
 		lh a1,0(t0)			# carrega a posicao x antiga do personagem em a1
 		lh a2,2(t0)			# carrega a posicao y antiga do personagem em a2
 		
-		mv a3,s0	
-				# carrega o frame atual (que esta na tela em a3)
+		mv a3,s0			# carrega o frame atual (que esta na tela em a3)
 					# inverte a3 (0 vira 1, 1 vira 0)
 		call PRINT			# imprime
 		
@@ -881,10 +960,10 @@ ATAQUE:		la t0,CHAR_POS			# carrega em t0 o endereco de CHAR_POS
 		la a0,grade			# carrega o valor do frame em a3
 		call PRINT
 		
-# Carregar endereços base
-la a4, presos                  # Endereço base da lista 'presos'
-la a5, fase                    # Endereço da variável 'fase'
-la s11, lista_selecionados     # Endereço base de 'lista_selecionados'
+# Carregar endereï¿½os base
+la a4, presos                  # Endereï¿½o base da lista 'presos'
+la a5, fase                    # Endereï¿½o da variï¿½vel 'fase'
+la s11, lista_selecionados     # Endereï¿½o base de 'lista_selecionados'
 
 # Calcular limite para o loop
 lb a5, 0(a5)                   # Carrega o valor em 'fase'
@@ -904,7 +983,7 @@ PRESOS_DMG_LOOP:
     lb s10, 0(s11)                 # Carrega o valor de 'lista_selecionados'
 
     # Configurar sprite 'presoDano'
-    la a0, presoDano           # Endereço do sprite
+    la a0, presoDano           # Endereï¿½o do sprite
     li s9, 5
 
     div s8, s10, s9                # s8 = lista_selecionados / 5
@@ -935,7 +1014,7 @@ PRESOS_DMG_LOOP:
     # Configurar frame
     
     mv a3, s0                      # Valor do frame em a3
-    call PRINT                     # Chamar função PRINT
+    call PRINT                     # Chamar funï¿½ï¿½o PRINT
     xori s0,s0,1
     
     addi sp, sp, -16
@@ -946,9 +1025,9 @@ PRESOS_DMG_LOOP:
     sw a7, 16(sp)
     
     		  li a0, 50          # Nota musical 
-   		  li a1, 500         # Duração do som em milissegundos
+   		  li a1, 500         # Duraï¿½ï¿½o do som em milissegundos
     		  li a2, 32          # Instrumento (32 = guitarra, por exemplo)
-  		  li a3, 127         # Volume (127 = máximo)
+  		  li a3, 127         # Volume (127 = mï¿½ximo)
   		  li a7, 31          # Syscall para tocar som
   		  ecall
   		  
@@ -962,7 +1041,7 @@ PRESOS_DMG_LOOP:
 PRESOS_DMG_NOT:
     addi a4, a4, 1                 # Incrementa o ponteiro de 'presos'
     addi s11, s11, 1               # Incrementa o ponteiro de 'lista_selecionados'
-    j PRESOS_DMG_LOOP            # Volta para o início do loop
+    j PRESOS_DMG_LOOP            # Volta para o inï¿½cio do loop
 
 OUT_PRESOS_DMG_LOOP:
     # Zerando os registradores para evitar conflitos
@@ -1030,8 +1109,8 @@ SEM_PRIS_DANO:
     li s1, 0
 COM_PRIS_DANO:
 
-# --- Nova lógica: marcar as grades perigosas com base nos prisioneiros ativos ---
-    # Primeiro, zera o array espacos_dano para não ter marcas residuais
+# --- Nova lï¿½gica: marcar as grades perigosas com base nos prisioneiros ativos ---
+    # Primeiro, zera o array espacos_dano para nï¿½o ter marcas residuais
     la s7, espacos_dano       # base do array
     li s6, 20                 # quantidade de bytes
 ZERAR_ESPACOS:
@@ -1043,7 +1122,7 @@ ZERAR_ESPACOS:
     j ZERAR_ESPACOS
     MARCA_DANO_INI:
 
-# Marcação dos espaços de dano pelos prisioneiros
+# Marcaï¿½ï¿½o dos espaï¿½os de dano pelos prisioneiros
 la s3, presos             # ponteiro para estados dos prisioneiros
 la s4, lista_selecionados # ponteiro para as grades dos prisioneiros
 li s7, 20                 # quantidade de prisioneiros
@@ -1051,29 +1130,29 @@ li s7, 20                 # quantidade de prisioneiros
 MARCA_DANO_LOOP:
     beqz s7, VERIFICA_DANO   # fim do loop se s7 == 0
     lb s2, 0(s3)             # estado do prisioneiro
-    ble s2, zero, PROX_PRISIONEIRO  # se não ativo, pula
+    ble s2, zero, PROX_PRISIONEIRO  # se nï¿½o ativo, pula
 
     lb s8, 0(s4)             # grade do prisioneiro
     la t0, espacos_dano      # base do array espacos_dano
-    add t0, t0, s8           # desloca até a grade indicada
+    add t0, t0, s8           # desloca atï¿½ a grade indicada
                     # marca com 1
     sb s1, 0(t0)
 
 PROX_PRISIONEIRO:
-    addi s3, s3, 1           # próximo prisioneiro (estado)
-    addi s4, s4, 1           # próximo índice em lista_selecionados
+    addi s3, s3, 1           # prï¿½ximo prisioneiro (estado)
+    addi s4, s4, 1           # prï¿½ximo ï¿½ndice em lista_selecionados
     addi s7, s7, -1          # decrementa o contador
     j MARCA_DANO_LOOP
 
 VERIFICA_DANO:
-    # Verifica se o policial está em um espaço marcado
-    la t2, policial    # endereço da variável policial
-    lb t3, 0(t2)       # t3 ? índice da grade do policial
+    # Verifica se o policial estï¿½ em um espaï¿½o marcado
+    la t2, policial    # endereï¿½o da variï¿½vel policial
+    lb t3, 0(t2)       # t3 ? ï¿½ndice da grade do policial
     la t0, espacos_dano
-    add t0, t0, t3     # acesso à posição correspondente
+    add t0, t0, t3     # acesso ï¿½ posiï¿½ï¿½o correspondente
     lb t4, 0(t0)      # valor na grade
 
-    beq t4, zero, SEM_JOGADOR_DMG  # se zero, não há perigo
+    beq t4, zero, SEM_JOGADOR_DMG  # se zero, nï¿½o hï¿½ perigo
 
     # Aplica dano:
     la t5, vida
@@ -1099,7 +1178,7 @@ SEM_JOGADOR_DMG:
     ret
     
     
-    GAME_OVER:
+GAME_OVER:
     		la a0,gameOver			# carrega o endereco do sprite 'map' em a0
 		li a1,0				# x = 0
 		li a2,0				# y = 0
@@ -1108,14 +1187,18 @@ SEM_JOGADOR_DMG:
 		li a3,1				# frame = 1
 		call PRINT
 		
-		  li a0, 60          # Nota musical 
-   		  li a1, 500         # Duração do som em milissegundos
-    		  li a2, 32          # Instrumento (32 = guitarra, por exemplo)
-  		  li a3, 127         # Volume (127 = máximo)
-  		  li a7, 31          # Syscall para tocar som
-  		  ecall
+		li a0, 60          # Nota musical 
+   		li a1, 500         # Duraï¿½ï¿½o do som em milissegundos
+    		li a2, 32          # Instrumento (32 = guitarra, por exemplo)
+  		li a3, 127         # Volume (127 = mï¿½ximo)
+  		li a7, 31          # Syscall para tocar som
+  		ecall
+  		
+  		la t0, fase
+    		li t1, 1
+    		sb t1, 0(t0)
 		
-	GAME_OVER_LOOP:		
+GAME_OVER_LOOP:		
 		call KEY2LOCK                  
         	li t0, ' '                 
         	li t1, 0xFF200000          
@@ -1179,51 +1262,132 @@ PRINT_LINHA:	lw t6,0(t1)			# carrega em t6 uma word (4 pixeis) da imagem
 		
 
 PLAY_SOUND:
-    li a0, 72          # Nota musical (72 = C5, por exemplo)
-    li a1, 500         # Duração do som em milissegundos
-    li a2, 32          # Instrumento (32 = guitarra, por exemplo)
-    li a3, 127         # Volume (127 = máximo)
-    li a7, 31          # Syscall para tocar som
-    ecall
-    ret
+    		li a0, 72          # Nota musical (72 = C5, por exemplo)
+   		li a1, 500         # Duraï¿½ï¿½o do som em milissegundos
+    		li a2, 32          # Instrumento (32 = guitarra, por exemplo)
+    		li a3, 127         # Volume (127 = mï¿½ximo)
+    		li a7, 31          # Syscall para tocar som
+    		ecall
+    		ret
 #parte internacional
 TocarMusica:
 					#s11 eh o contador de tempo
-li a7,30					#coloca o horario atual em a0
-ecall						#função não recebe entrada
- If_TM:						#apenas toca a proxima nota de Notas
- 	la t0,var
- 	lw t0,0(t0)
- 	bltu a0,t0, Fim_If_TM
-	la t2,Music_config
- 	lw t0, 0(t2)
- 	lw t1, 4(t2)
- 	lw a2, 8(t2)
- 	lw a3, 12(t2)
-	If_TM1:
+		li a7,30					#coloca o horario atual em a0
+		ecall						#funï¿½ï¿½o nï¿½o recebe entrada
+
+If_TM:						#apenas toca a proxima nota de Notas
+ 		la t0,var
+ 		lw t0,0(t0)
+ 		bltu a0,t0, Fim_If_TM
+		la t2,Music_config
+ 		lw t0, 0(t2)
+ 		lw t1, 4(t2)
+ 		lw a2, 8(t2)
+ 		lw a3, 12(t2)
+
+If_TM1:
 		bne t0,t1, Fim_If_TM1	# contador chegou no final? entÃƒÂ£o  vÃƒÂ¡ para SET_SONG para zerar o contador e as notas (loop infinito)
 		sw zero, 4(t2)
 		li t1, 0
-	Fim_If_TM1:
-	la t4, Notas
-	li t3,8
-	mul t1, t1,t3
-	add t4,t4,t1
-	lw a0,0(t4)		# le o valor da nota
-	lw a1,4(t4)		# le a duracao da nota
-	li a7,31		# define a chamada de syscall
-	ecall			# toca a nota
+
+Fim_If_TM1:
+		la t4, Notas
+		li t3,8
+		mul t1, t1,t3
+		add t4,t4,t1
+		lw a0,0(t4)		# le o valor da nota
+		lw a1,4(t4)		# le a duracao da nota
+		li a7,31		# define a chamada de syscall
+		ecall			# toca a nota
 	
-	li a7,30		# coloca o horario atual em a0
-	ecall
+		li a7,30		# coloca o horario atual em a0
+		ecall
 	
-	lw t4, 4(t4)
-	add a0,a0,t4
-	la t0,var
-	sw a0,0(t0)
-	lw t6, 4(t2)
-	addi t6,t6,1
-	sw t6,4(t2)		# incrementa o contador de notas
+		lw t4, 4(t4)
+		add a0,a0,t4
+		la t0,var
+		sw a0,0(t0)
+		lw t6, 4(t2)
+		addi t6,t6,1
+		sw t6,4(t2)		# incrementa o contador de notas
+
 Fim_If_TM:
 
-ret
+		ret
+		
+EXIBIR_FASE:
+    la t0, fase
+    lb t1, 0(t0)        # Carrega a fase atual
+	li t2,1
+    beq t1, t2, EXIBIR_FASE_1
+    addi t2,t2,1
+    beq t1, t2, EXIBIR_FASE_2
+    addi t2,t2,1
+    beq t1, t2, EXIBIR_FASE_3
+    addi t2,t2,1
+    beq t1, t2, EXIBIR_FASE_4
+    addi t2,t2,1
+    beq t1, t2, TELA_FINAL
+
+
+EXIBIR_FASE_1:
+		la a0,fase1			# carrega o endereco do sprite 'map' em a0
+		li a1,0				# x = 0
+		li a2,0				# y = 0
+		li a3,0				# frame = 0
+		call PRINT			# imprime o sprite
+		li a3,1				# frame = 1
+		call PRINT
+    		j EXIBIR_FASE_FIM
+
+EXIBIR_FASE_2:
+la a0, fase2
+    li a1, 0             # Posiï¿½ï¿½o X
+    li a2, 0              # Posiï¿½ï¿½o Y
+    li a3, 0              # Frame 1
+    call PRINT
+    li a3, 1              # Frame 1
+    call PRINT
+    j EXIBIR_FASE_FIM
+
+EXIBIR_FASE_3:
+la a0, fase3
+    li a1, 0             # Posiï¿½ï¿½o X
+    li a2, 0              # Posiï¿½ï¿½o Y
+    li a3, 0              # Frame 1
+    call PRINT
+    li a3, 1              # Frame 1
+    call PRINT
+    j EXIBIR_FASE_FIM
+
+EXIBIR_FASE_4:
+la a0, fase4
+    li a1, 0             # Posiï¿½ï¿½o X
+    li a2, 0              # Posiï¿½ï¿½o Y
+    li a3, 0              # Frame 1
+    call PRINT
+    li a3, 1              # Frame 1
+    call PRINT
+    j EXIBIR_FASE_FIM
+    
+EXIBIR_FASE_FIM:
+    j SETUP3
+
+TELA_FINAL:
+    # Mostrar tela final
+    la a0, telaFinal
+    li a1, 0
+    li a2, 0
+    li a3, 0
+    call PRINT
+    li a3, 1
+    call PRINT
+    j WAIT_SPACE_FINAL
+
+WAIT_SPACE_FINAL:
+    call KEY2LOCK
+    li t0, ' '
+    li t1, 0xFF200000
+    lw t2, 4(t1)
+    bne t2, t0, WAIT_SPACE_FINAL
+    j INICIO  # Reiniciar o jogo
